@@ -15,8 +15,6 @@ void neuralnet::configureNetworkFromFile(std::string fileName = "") {
   }
 }
 
-// Just a comment to test Slack integration
-
 std::vector<LSL_Point3D_container> neuralnet::classifyClusters(std::vector<LSL_Point3D_container> clusters) {
   std::vector <LSL_Point3D_container> legs;
   std::vector <std::vector<Real>> descriptor;
