@@ -35,7 +35,7 @@ endif(BUILD_QOPENTLD)
 #-------------------------------------------------------------------------------
 #version
 set(TLD_VERSION_MAJOR 1)
-set(TLD_VERSION_MINOR 3)
+set(TLD_VERSION_MINOR 4)
 set(TLD_VERSION_PATCH 0)
 set(TLD_VERSION ${TLD_VERSION_MAJOR}.${TLD_VERSION_MINOR}.${TLD_VERSION_PATCH})
 
@@ -49,6 +49,15 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 option(BUILD_QOPENTLD "Build with Qt-config-dialog." OFF)
 option(USE_SYSTEM_LIBS "Use the installed version of libconfig++." OFF)
+option(WITH_OPENMP "Use OpenMP." OFF)
+
+if(WITH_OPENMP)
+	find_package(OpenMP REQUIRED)
+
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif(WITH_OPENMP)
 
 if(WIN32)
 	add_definitions(-DLIBCONFIGXX_STATIC -DLIBCONFIG_STATIC) #Needed when linking libconfig statically
@@ -58,9 +67,10 @@ if(APPLE)
 	add_definitions(-DHAVE_XLOCALE_H)
 endif(APPLE)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp -fPIC")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -fPIC")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lgomp")
+if(NOT MSVC)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+endif(NOT MSVC)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)

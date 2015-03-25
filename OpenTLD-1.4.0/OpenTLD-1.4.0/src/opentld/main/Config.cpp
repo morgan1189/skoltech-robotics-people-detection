@@ -497,8 +497,6 @@ int Config::configure(Main *main)
 #define NULL    0
 #define EOF (-1)
 #define ERR(s, c)   if(opterr){\
-    char errbuf[2];\
-    errbuf[0] = c; errbuf[1] = '\n';\
     fputs(argv[0], stderr);\
     fputs(s, stderr);\
     fputc(c, stderr);}
