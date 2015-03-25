@@ -316,8 +316,6 @@ int people2D_engine::segment(std::vector<LSL_Point3D_container> &clusters)
 {
   for (uint i=0;i<laserscan.size();i++)
   {
-    std::vector<LSL_Point3D_container> clusters;
-    //~ compute segments
     segmentscanJDC(i, clusters);
   }
   return 1;
