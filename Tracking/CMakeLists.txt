@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+project( Tracking )
+find_package( OpenCV REQUIRED )
+add_executable( Tracking main.cpp UKF.cpp UKF.h )
+target_link_libraries( Tracking ${OpenCV_LIBS} )
