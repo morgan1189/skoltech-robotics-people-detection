@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <cmath>
+#include <random>
 #include "UKF.h"
 
 using namespace std;
@@ -116,6 +117,8 @@ int UKF::prediction_update()
 	//observ_prediction();
 	sigma_point_gen();
 	print_sigma_points();
+	process_prediction();
+	observ_prediction();
 	return 0;
 }
 
@@ -125,9 +128,31 @@ int UKF::observation_update()
 	return 0;
 }
 
-int UKF::process_prediction()
+int UKF::process_prediction()				//  
 {
-	X_state.at<double>(0,0) += X_state.at<double>(1,0)*T*cos(X_state.at<double>(3,0));
+	for (int j =0;j<X_sigma)
+	{
+		//X_state.at<double>(0,0) += X_state.at<double>(4,0)*T*cos(X_state.at<double>(3,0));
+		X_sigma.at<double>(0,j) += X_sigma.at<double>(4,j)*T*cos(X_sigma.at<double>(3,j));
+		X_sigma.at<double>(1,j) += X_sigma.at<double>(4,j)*T*sin(X_sigma.at<double>(3,j));
+		X_sigma.at<double>(2,j) += normal_distriburion<double> n_z(0,sigm_z);
+		X_sigma.at<double>(3,j) += normal_distribution<double> n_phi(0,sigm_phi);
+		X_sigma.at<double>(4,j) += normal_distribution<double> n_v(0,sigm_v);
+
+	}
+	
+	for(int j =0;j<X_sigma.cols; ++j)
+	{
+		X_state = Mat::zeros(5,1,CV_64F);
+		Mat x  = Mat::zeros(5,1,CV_64F);
+		
+		for(int i=0;i<X_sigma.rows;++i)
+			x.at<double>(i,0) = Weights.at<double>(j,0)*X_sigma.at<double>(i,j);
+			
+		X_state += x;
+	}
+	
+	
 	return 0;
 }
 
@@ -140,13 +165,21 @@ int UKF::sigma_point_gen()
 {
 	Mat Var = Cholesky::chol(P);
 	X_sigma.at<double>(0) = X_state.at<double>(0);
+	Weights.at<double>(0) = Rho/(5+Rho); 
 
 	for (int j=1; j < X_sigma.cols/2+1; ++j)
 	{
-		print_mat(Var.at<double>(j-1));
-		X_sigma.at<double>(j) = X_state.at<double>(0) + Var.at<double>(j-1);
-		X_sigma.at<double>(j+X_sigma.cols/2) = X_state.at<double>(0) - Var.at<double>(j+X_sigma.cols/2-1); 
+		for(int i = 0; i<X_sigma.rows; ++i)
+		{
+			print_mat(Var.at<double>(i,j-1));
+			X_sigma.at<double>(i,j) = X_state.at<double>(i,0) + Var.at<double>(i,j-1);
+			X_sigma.at<double>(i,j+X_sigma.cols/2) = X_state.at<double>(i,0) - Var.at<double>(i,j+X_sigma.cols/2-1);
+		}
+		
+		Weights.at<double>(j) =  1/(2*(5+Rho));
+		Weights.at<double>(j+X_state.cols/2) = 1/(2*(5+Rho));
 	}
+	
 	return 0;
 }
 
