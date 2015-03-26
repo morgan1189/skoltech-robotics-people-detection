@@ -1,4 +1,4 @@
-    /*  Copyright 2011 AIT Austrian Institute of Technology
+/*  Copyright 2011 AIT Austrian Institute of Technology
 *
 *   This file is part of OpenTLD.
 *
@@ -20,6 +20,7 @@
 #include "Trajectory.h"
 #include <stdexcept>
 #include <cstdio>
+#include "DetectorCascade.h"
 
 /**
  * @author Clemens Korner
@@ -89,36 +90,42 @@ void Trajectory::drawTrajectory(IplImage * image)
 	}
 }
 
-void Trajectory::faceCoordinates(std::ofstream &ofs)
+/*void Trajectory::faceCoordinates(std::ofstream &ofs)
 try {
-    
+    	printf("Vector size - %d\n", m_track_positions.size());
         for(size_t i = 0; i < m_track_positions.size(); i++)
         {
             if (m_track_positions[i].x==-1) throw runtime_error("Empty vector!");
             
+	    printf("Entered cycle! \n");
+
             ofs<< m_track_positions[i].x;
             ofs<<"~";
             ofs<< m_track_positions[i].y;
             ofs<<"/n";
+
+	    printf("x: %d  y: %d \n", m_track_positions[i].x, m_track_positions[i].y);
             /*  fprintf(coordinatesFile, " x - %d : y - %d\n", m_track_positions[i].x, m_track_positions[i].y); //Write it to a file */
         
-        }
     
 	/* CvPoint center = cvPoint(detectorCascade->detectionResult->detectorBB->x+detectorCascade->detectionResult->detectorBB->width/2, detectorCascade->detectionResult->detectorBB->y+detectorCascade->detectionResult->detectorBB->height/2); // Determine the center of the bounding box
-	CvPoint rcenter = cvPoint(detectorCascade->imgWidth/2-center.x,detectorCascade->imgHeight/2-center.y); //relative coordinates of the bounding box center to the center of the view */
+	CvPoint rcenter = cvPoint(detectorCascade->imgWidth/2-center.x,detectorCascade->imgHeight/2-center.y); //relative coordinates of the bounding box center to the center of the view
 }
 catch (runtime_error& e)
 {
     cerr<<"runtime_error: "<<e.what();
-}
+}*/
     
-/* void Trajectory::faceCoordinates(FILE * coordinatesFile, DetectorCascade * detectorCascade)
+void Trajectory::faceCoordinates(std::ofstream &ofs, cv::Rect * currBB, DetectorCascade * detectorCascade)
 {
-    CvPoint center = cvPoint(m_track_positions[]
-    /* CvPoint center = cvPoint(detectorCascade->detectionResult->detectorBB->x+detectorCascade->detectionResult->detectorBB->width/2, detectorCascade->detectionResult->detectorBB->y+detectorCascade->detectionResult->detectorBB->height/2); // Determine the center of the bounding box
-    CvPoint rcenter = cvPoint(detectorCascade->imgWidth/2-center.x,detectorCascade->imgHeight/2-center.y); //relative coordinates of the bounding box center to the center of the view
-                                     fprintf(coordinatesFile, " x - %d : y - %d\n", rcenter.x, rcenter.y); // Write it to a file
-} */
-
+    CvPoint center = cvPoint(currBB->x+currBB->width/2, currBB->y+currBB->height/2); // Determine the center of the bounding box
+    CvPoint rcenter = cvPoint(detectorCascade->imgWidth/2 - center.x,detectorCascade->imgHeight/2 - center.y); //relative coordinates of the bounding box center to the center of the view
+    //fprintf(coordinatesFile, " x - %d : y - %d\n", rcenter.x, rcenter.y); // Write it to a file
+   
+     ofs<< rcenter.x;
+     ofs<<"~";
+     ofs<< rcenter.y;
+     ofs<<"\n";
+}
 
 }

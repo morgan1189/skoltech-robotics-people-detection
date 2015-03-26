@@ -23,7 +23,7 @@
 #include <fstream>
 #include <vector>
 #include <opencv/cv.h>
-#include <DetectorCascade.h>
+#include "DetectorCascade.h"
 
 /**
  * @author Clemens Korner
@@ -71,11 +71,11 @@ public:
 	 */
 	void drawTrajectory(IplImage * image);
 	
-	/**
+        /**
          * Writes face coordinates relative to the camera into a file
 	*/	
-	//void faceCoordinates(FILE * coordinatesFile, tld::DetectorCascade * detectorCascade);
-    void faceCoordinates(std::ofstream &ofs);
+	void faceCoordinates(std::ofstream &ofs, cv::Rect * currBB, DetectorCascade * detectorCascade);
+        //void faceCoordinates(std::ofstream &ofs);
 
 private:
 	std::size_t m_length; ///< number of the last frames which are considered by the trajectory

@@ -30,6 +30,7 @@
 #include "Gui.h"
 #include "TLDUtil.h"
 #include "Trajectory.h"
+#include <stdexcept>
 
 using namespace tld;
 using namespace cv;
@@ -72,7 +73,9 @@ void Main::doWork()
     }
 
     FILE *resultsFile = NULL;
-    FILE *anglesFile = NULL; // File to record angle of the human towards robot
+
+    std::cout<<name.c_str()<<std::endl;
+    std::ofstream ofs(name.c_str());
 
     if(printResults != NULL)
     {
@@ -84,13 +87,9 @@ void Main::doWork()
         }
     }
 
-    //Opening file to record the angles
-    if(recordAngles != NULL)
-    {
-        anglesFile = fopen(Angles, "w");
-    }
-	
-    fprintf(anglesFile, " width - %d : height - %d\n", tld->detectorCascade->imgWidth, tld->detectorCascade->imgHeight); // Write windows width and height to a file
+    ofs<< tld->detectorCascade->imgWidth;
+    ofs<<"~";
+    ofs<< tld->detectorCascade->imgHeight;    
 
     bool reuseFrameOnce = false;
     bool skipProcessingOnce = false;
@@ -187,14 +186,14 @@ void Main::doWork()
 					cvLine(img, cvPoint(center.x-2, center.y+2), cvPoint(center.x+2, center.y-2), rectangleColor, 2);
 					trajectory.addPoint(center, rectangleColor);
 				}
+
 				// Recording coordinates to calculate angles
 				if (recordAngles)
 				{
-					trajectory.faceCoordinates(anglesFile, tld->detectorCascade);
-					//CvPoint center = CvPoint(tld->currBB->x+tld->currBB->width/2, tld->currBB->y+tld->currBB->height/2); // Determine the center of the bounding box
-					//CvPoint rcenter = CvPoint(tld->detectorCascade->imgWidth/2-center->x,tld->detectorCascade->imgHeight/2-center->y); //relative coordinates of the bounding box center to the center of the view
-					//fprintf(Angles, " x - %d : y - %d\n", rcenter->x, rcenter->y); // Write it to a file
+					//trajectory.faceCoordinates(anglesFile, tld->detectorCascade);
+			                trajectory.faceCoordinates(ofs,tld->currBB);
 				}
+
             }
 			else if(showTrajectory)
 			{
