@@ -1,14 +1,13 @@
 #include <iostream>
 #include <stdexcept>
 #include <cmath>
-#include <random>
 #include "UKF.h"
 
 using namespace std;
 using namespace cv;
 
 const double time_step = 0.01;  // in sec
-const double rho = -2;  
+const double rho = -2.0;  
 const double sigm_z = 0.01;
 const double sigm_phi = 3.14/9;
 const double sigm_v = 0.1;
@@ -27,8 +26,8 @@ const double sigm_gamma = 3.14/30;
 
 UKF::UKF()
 {
-	double T = time_step;		// time step
-	double Rho = rho;
+	 T = time_step;		// time step
+	 Rho = rho;
 
 	X_state = Mat::zeros(5,1,CV_64F);
 	X_rob = Mat::zeros(3,1,CV_64F);
@@ -116,7 +115,7 @@ int UKF::prediction_update()
 	//process_prediction();
 	//observ_prediction();
 	sigma_point_gen();
-	print_sigma_points();
+	//print_sigma_points();
 	process_prediction();
 	observ_prediction();
 	return 0;
@@ -130,14 +129,21 @@ int UKF::observation_update()
 
 int UKF::process_prediction()				//  
 {
-	for (int j =0;j<X_sigma)
+	double n_z = Cholesky::rand(0.0,sigm_z);
+	double n_phi = Cholesky::rand(0.0,sigm_phi);
+	double n_v = Cholesky::rand(0.0,sigm_v);
+
+	//cout<<"n_z = "<<n_z<<"\t n_phi = "<<n_phi<<"\t n_v = "<<n_v<<endl;
+
+	for (int j =0;j<X_sigma.cols;++j)
 	{
+
 		//X_state.at<double>(0,0) += X_state.at<double>(4,0)*T*cos(X_state.at<double>(3,0));
 		X_sigma.at<double>(0,j) += X_sigma.at<double>(4,j)*T*cos(X_sigma.at<double>(3,j));
 		X_sigma.at<double>(1,j) += X_sigma.at<double>(4,j)*T*sin(X_sigma.at<double>(3,j));
-		X_sigma.at<double>(2,j) += normal_distriburion<double> n_z(0,sigm_z);
-		X_sigma.at<double>(3,j) += normal_distribution<double> n_phi(0,sigm_phi);
-		X_sigma.at<double>(4,j) += normal_distribution<double> n_v(0,sigm_v);
+		X_sigma.at<double>(2,j) += n_z;
+		X_sigma.at<double>(3,j) += n_phi;
+		X_sigma.at<double>(4,j) += n_v;
 
 	}
 	
@@ -148,8 +154,11 @@ int UKF::process_prediction()				//
 		
 		for(int i=0;i<X_sigma.rows;++i)
 			x.at<double>(i,0) = Weights.at<double>(j,0)*X_sigma.at<double>(i,j);
-			
-		X_state += x;
+		
+		for (int k =0;k<X_state.rows;++k)	
+		{	X_state.at<double>(k,0) += x.at<double>(k,0);
+			cout<<X_state.at<double>(k,0)<<endl;
+		}
 	}
 	
 	
@@ -164,27 +173,41 @@ int UKF::observ_prediction()
 int UKF::sigma_point_gen()
 {
 	Mat Var = Cholesky::chol(P);
-	X_sigma.at<double>(0) = X_state.at<double>(0);
-	Weights.at<double>(0) = Rho/(5+Rho); 
 
+
+
+	//print_mat(Var);
+
+
+	X_sigma.at<double>(0) = X_state.at<double>(0);
+
+	//print_mat(X_sigma);
+
+	Weights.at<double>(0,0) = Rho/(5.0+Rho); 
+
+	cout<<Rho <<" fwefwfwe\n";
 	for (int j=1; j < X_sigma.cols/2+1; ++j)
 	{
 		for(int i = 0; i<X_sigma.rows; ++i)
 		{
-			print_mat(Var.at<double>(i,j-1));
+			//print_mat(Var.at<double>(i,j-1));
 			X_sigma.at<double>(i,j) = X_state.at<double>(i,0) + Var.at<double>(i,j-1);
-			X_sigma.at<double>(i,j+X_sigma.cols/2) = X_state.at<double>(i,0) - Var.at<double>(i,j+X_sigma.cols/2-1);
+			X_sigma.at<double>(i,j+X_sigma.cols/2) = X_state.at<double>(i,0) - Var.at<double>(i,j-1);
+			//getch();
 		}
-		
-		Weights.at<double>(j) =  1/(2*(5+Rho));
-		Weights.at<double>(j+X_state.cols/2) = 1/(2*(5+Rho));
+		Weights.at<double>(0,j) =  1/(2*(5+Rho));
+		Weights.at<double>(0,j+X_sigma.cols/2) = 1/(2*(5+Rho));
 	}
+
+	print_mat(X_sigma);
+
 	
 	return 0;
 }
 
 int UKF::print_sigma_points()
 {
+	cout<<"X_sigma = \n";
 	for (int i =0; i<X_sigma.rows;++i)
 	{
 		for(int j=0;j<X_sigma.cols;++j)
@@ -232,6 +255,16 @@ Mat Cholesky::chol(Mat A)
 
 	return L;
 }
+
+double Cholesky::rand(double mean, double var)
+{
+	std::default_random_engine generator;
+	std::normal_distribution<double> distribution(mean,var);
+
+
+	return distribution(generator);
+}
+
 
 int UKF::print_mat(Mat m)
 {

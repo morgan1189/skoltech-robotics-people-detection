@@ -1,4 +1,5 @@
 #include <opencv2/opencv.hpp>
+#include <random>
 
 
 using namespace std;
@@ -46,9 +47,11 @@ public:
 	int observation_update();
 	int print_sigma_points();
 	int get_State();
+	int print_mat(Mat m);
 };
 
 namespace Cholesky
 {
 	Mat chol(Mat A);
+	double rand(double mean, double var);
 } 

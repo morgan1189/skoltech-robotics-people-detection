@@ -13,7 +13,7 @@ try{
 	Kalman.initialize();
 	//Kalman.get_State();
 	Kalman.prediction_update();
-
+	Kalman.get_State();
 	
 
 	cout<<"Hello, world!\n";
