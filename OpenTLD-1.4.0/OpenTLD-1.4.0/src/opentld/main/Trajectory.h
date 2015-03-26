@@ -20,6 +20,7 @@
 #ifndef TRAJECTORY_H_
 #define TRAJECTORY_H_
 
+#include <fstream>
 #include <vector>
 #include <opencv/cv.h>
 #include <DetectorCascade.h>
@@ -73,7 +74,8 @@ public:
 	/**
          * Writes face coordinates relative to the camera into a file
 	*/	
-	void faceCoordinates(FILE * coordinatesFile, tld::DetectorCascade * detectorCascade);
+	//void faceCoordinates(FILE * coordinatesFile, tld::DetectorCascade * detectorCascade);
+    void faceCoordinates(std::ofstream &ofs);
 
 private:
 	std::size_t m_length; ///< number of the last frames which are considered by the trajectory

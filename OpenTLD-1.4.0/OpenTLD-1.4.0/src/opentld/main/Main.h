@@ -48,7 +48,8 @@ public:
 	bool recordAngles; // Face angles output flag
 	int trajectoryLength;
     const char *printResults;
-    const char *Angles; // Face coordinates file
+    //const char *Angles; // Face coordinates file
+    std::string name = "Angles";
     const char *saveDir;
     double threshold;
     bool showForeground;

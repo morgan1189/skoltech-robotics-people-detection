@@ -30,12 +30,13 @@
 #include "Gui.h"
 #include "TLDUtil.h"
 #include "Trajectory.h"
+#include <stdexcept>
 
 using namespace tld;
 using namespace cv;
 
 void Main::doWork()
-{
+try {
 	Trajectory trajectory;
     IplImage *img = imAcqGetImg(imAcq);
     Mat grey(img->height, img->width, CV_8UC1);
@@ -45,7 +46,7 @@ void Main::doWork()
     tld->detectorCascade->imgHeight = grey.rows;
     tld->detectorCascade->imgWidthStep = grey.step;
 
-	if(showTrajectory)
+    if(showTrajectory)
 	{
 		trajectory.init(trajectoryLength);
 	}
@@ -72,29 +73,46 @@ void Main::doWork()
     }
 
     FILE *resultsFile = NULL;
-    FILE *anglesFile = NULL; // File to record angle of the human towards robot
-
+    //FILE *anglesFile = NULL; // File to record angle of the human towards robot
+    std::cout<<name.c_str()<<std::endl;
+    std::ofstream ofs(name.c_str());
+    
     if(printResults != NULL)
     {
         resultsFile = fopen(printResults, "w");
         if(!resultsFile)
         {
-            fprintf(stderr, "Error: Unable to create results-file \"%s\"\n", printResults);
+            fprintf(stderr, "Error: Unable to create results-file \"%s\"\n",printResults);
             exit(-1);
         }
     }
-
+    
     //Opening file to record the angles
-    if(recordAngles != NULL)
+    /*if(recordAngles != NULL)
     {
         anglesFile = fopen(Angles, "w");
-    }
+    }*/
 	
-    fprintf(anglesFile, " width - %d : height - %d\n", tld->detectorCascade->imgWidth, tld->detectorCascade->imgHeight); // Write windows width and height to a file
-
+    
+    if (tld == NULL) throw std::runtime_error("Empty tld!");
+        
+    if (tld->detectorCascade == NULL) throw std::runtime_error("Empty detectorCascade!");
+            
+    //fprintf(anglesFile, " width - %d : height - %d\n", tld->detectorCascade->imgWidth, tld->detectorCascade->imgHeight); // Write windows width and height to a file
+    
+    ofs<< tld->detectorCascade->imgWidth;
+    ofs<<"~";
+    ofs<< tld->detectorCascade->imgHeight;
+    
+    //printf("Worked till here!\n");
+    
+    
     bool reuseFrameOnce = false;
     bool skipProcessingOnce = false;
 
+    
+
+    
     if(loadModel && modelPath != NULL)
     {
         tld->readFromFile(modelPath);
@@ -190,7 +208,8 @@ void Main::doWork()
 				// Recording coordinates to calculate angles
 				if (recordAngles)
 				{
-					trajectory.faceCoordinates(anglesFile, tld->detectorCascade);
+					//trajectory.faceCoordinates(anglesFile, tld->detectorCascade);
+                    trajectory.faceCoordinates(ofs);
 				}
             }
 			else if(showTrajectory)
@@ -312,4 +331,9 @@ void Main::doWork()
     {
         fclose(resultsFile);
     }
+}
+
+catch (std::runtime_error& e)
+{
+    std::cerr<<"runtime_error: "<<e.what();
 }
