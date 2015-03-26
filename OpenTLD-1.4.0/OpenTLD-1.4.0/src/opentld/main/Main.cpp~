@@ -191,6 +191,9 @@ void Main::doWork()
 				if (recordAngles)
 				{
 					trajectory.faceCoordinates(anglesFile, tld->detectorCascade);
+					//CvPoint center = CvPoint(tld->currBB->x+tld->currBB->width/2, tld->currBB->y+tld->currBB->height/2); // Determine the center of the bounding box
+					//CvPoint rcenter = CvPoint(tld->detectorCascade->imgWidth/2-center->x,tld->detectorCascade->imgHeight/2-center->y); //relative coordinates of the bounding box center to the center of the view
+					//fprintf(Angles, " x - %d : y - %d\n", rcenter->x, rcenter->y); // Write it to a file
 				}
             }
 			else if(showTrajectory)

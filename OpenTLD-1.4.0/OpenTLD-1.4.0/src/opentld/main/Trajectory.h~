@@ -22,7 +22,6 @@
 
 #include <vector>
 #include <opencv/cv.h>
-#include <DetectorCascade.h>
 
 /**
  * @author Clemens Korner

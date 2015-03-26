@@ -89,12 +89,4 @@ void Trajectory::drawTrajectory(IplImage * image)
 	}
 }
 
-void Trajectory::faceCoordinates(FILE * coordinatesFile, DetectorCascade * detectorCascade)
-{
-	CvPoint center = cvPoint(detectorCascade->detectionResult->detectorBB->x+detectorCascade->detectionResult->detectorBB->width/2, detectorCascade->detectionResult->detectorBB->y+detectorCascade->detectionResult->detectorBB->height/2); // Determine the center of the bounding box
-	CvPoint rcenter = cvPoint(detectorCascade->imgWidth/2-center.x,detectorCascade->imgHeight/2-center.y); //relative coordinates of the bounding box center to the center of the view
-	fprintf(coordinatesFile, " x - %d : y - %d\n", rcenter.x, rcenter.y); // Write it to a file
-	
-}
-
 }

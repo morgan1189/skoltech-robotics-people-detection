@@ -113,7 +113,7 @@ int parse_command_line(int argc, char **argv, sw_param_str *sw_param)
 
 	}
 	
-	if(!sw_param -> inputfile.size() || !sw_param -> outputfile.size() || !sw_param -> modelfile.size() || sw_param -> dseg == 0 ) 
+	if(!sw_param -> inputfile.size() || !sw_param -> outputfile.size() || sw_param -> dseg == 0 )
 	{
 		prg_info();
 		exit(0);
@@ -151,15 +151,15 @@ int main (int argc, char **argv)
   printf("File contains %d laser scans\n", ret);
   
   ppl2D.set_featureset();
-  neuralnet net;
-  net.lfeatures = ppl2D.lfeatures;
-  net.configureNetworkFromFile("");
+  neuralnet net(ppl2D.lfeatures);
   
   std::vector<LSL_Point3D_container> clusters;
   ppl2D.segment(clusters);
   std::vector<LSL_Point3D_container> legs = net.classifyClusters(clusters);
-  
   // Let's assume that we have acquired legs here. Have to pass them to other C++ code now
+  
+  return 0;
+  
   
 	/*sw_param_str sw_param;
 	
