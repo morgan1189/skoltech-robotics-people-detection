@@ -1,0 +1,65 @@
+/*!
+  \~japanese
+  \page usage_windows_bat_page Visual C++ (バッチファイルを使ったコンパイル)
+
+  Visual Studio の提供するバッチファイルを用いて、Visual Studioを起動せずにコマンドプロンプトからコンパイルする方法を紹介します。\n
+  以下の作業はコマンドプロンプト上で行います。
+
+
+  \~english
+  \page usage_windows_bat_page Visual C++ (using batch file)
+
+  This page shows how to compile using by the batch file provided by Visual Studio.  The following work is done at the command prompt.
+
+
+  \~japanese
+  \section usage_windows_bat_link_make コンパイル
+
+  -# コンパイルに必要な環境変数を設定するために Visual Studio が提供している bat ファイルをコピーします。 \n
+  Program Files\\Microsoft Visual Studio *\\Common7\\Tools\\vsvars32.bat を urg_library-*.*.*\\windowsexe にコピーします。 \n
+  (ライブラリ、Visual Studioのバージョン番号は、利用するものに読み替えて下さい。)
+  \n \n
+  -# コンパイル用の bat ファイルの実行 \n
+  urg_library-*.*.*\\windowsexe\\compile.bat を実行してコンパイルを行います。\n
+  (vsvars32.batファイルが同じフォルダに無いとエラー終了します。)
+  \n \n
+
+  詳細は compile.bat をご覧下さい。
+
+  \section usage_windows_bat_run_sample 生成されたサンプルの実行
+  urg_library-*.*.*\\windowsexe で生成される exe を実行します。\n
+  環境によってはサンプルプログラムを変更しないとURGと接続できない場合がありますので、\ref library_sample_page を参考に変更してください。
+  \n \n
+
+  \section usage_windows_bat_library 生成されたライブラリの使用
+  スタティックライブラリ urg.lib と urg_cpp.lib が生成されるので
+  \ref usage_windows_vcproj_link を参考にプロジェクトの設定をし、使用してください。\n\n
+
+
+  \~english
+  \section usage_windows_bat_link_make Compile
+
+  -# Copy the batch file provided by Visual Studio to set the environment variables needs for compiling. \n
+  Copy Program Files\\Microsoft Visual Studio *\\Common7\\Tools\\vsvars32.bat to urg_library-*.*.*\\windowsexe \n
+  (Version of the library, please replace what you use.)
+  \n \n
+  -# Running the bat file for compilation. \n
+  Run urg_library-*.*.*\\windowsexe\\compile.bat file to compile.
+  \n \n
+  -# Running the generated samples.
+  Run generated execute files in urg_library-*.*.*\\windowsexe folder.
+
+  For more information, please see compile.bat file.
+
+
+  \~japanese
+  \section usage_windows_bat_link_clean クリーンアップ
+
+  生成されたサンプルの実行ファイルを削除するには urg_library-*.*.*\\windowsexe\\cleanobj.bat を実行して下さい。
+
+
+  \~english
+  \section usage_windows_bat_link_clean Clean up
+
+  Run urg_library-*.*.*\\windowsexe\\cleanobj.bat to delete a file that is generated.
+*/

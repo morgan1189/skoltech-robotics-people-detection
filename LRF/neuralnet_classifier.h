@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <vector>
 #include <string>
-#include <gsl_blas.h>
+#include <gsl/gsl_blas.h>
 #include "people2D_engine.hpp"
 
 class neuralnet {

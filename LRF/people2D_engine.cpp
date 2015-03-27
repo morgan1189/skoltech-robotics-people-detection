@@ -499,7 +499,18 @@ int people2D_engine::segmentscanJDC(int lidx, std::vector<LSL_Point3D_container>
 				
 				//~ pump it into
 				single_cluster.pts.insert(single_cluster.pts.begin(), laserscan[lidx].data.pts.begin() + last_breaking_idx, laserscan[lidx].data.pts.begin() + breaking_idx);
-				clusters.push_back(single_cluster);
+                
+                bool addCluster = true;
+                for (std::vector <LSL_Point3D_str>::iterator it = single_cluster.pts.begin(); it!=single_cluster.pts.end(); it++) {
+                    if (it->x == 0 || it->y == 0) {
+                        addCluster = false;
+                        break;
+                    }
+                }
+                
+                if (addCluster) {
+                    clusters.push_back(single_cluster);
+                }
  
 			}	
 			
@@ -518,6 +529,12 @@ int people2D_engine::segmentscanJDC(int lidx, std::vector<LSL_Point3D_container>
 }
 
 // ---------------------------------------------------------
+
+void people2D_engine::add_onescan(laserscan_data onescan)
+{
+    laserscan = std::vector<laserscan_data>();
+    laserscan.push_back(onescan);
+}
 
 int people2D_engine::load_scandata(std::string fname)
 {

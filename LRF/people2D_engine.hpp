@@ -112,6 +112,7 @@ class people2D_engine
 	public:
     LSL_lfeatures_class *lfeatures;
 		int load_scandata(std::string fname );
+        void add_onescan(laserscan_data onescan);
 		people2D_engine(sw_param_str param_in)
 		{
 			fsz=0;

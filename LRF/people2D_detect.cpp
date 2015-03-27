@@ -23,6 +23,13 @@
 #include "people2D_engine.hpp"
 #include "neuralnet_classifier.h"
 
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include "urg_c/urg_sensor.h"
+#include "urg_c/urg_utils.h"
+#include "urg_c/urg_detect_os.h"
 
 
 ////~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ 
@@ -133,30 +140,153 @@ int parse_command_line(int argc, char **argv, sw_param_str *sw_param)
 	return(1);
 }
 
-//~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ 
+//~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+
+int open_urg_sensor_ethernet(urg_t *urg)
+{
+#if defined(URG_WINDOWS_OS)
+    const char *device = "COM3";
+#elif defined(URG_LINUX_OS)
+    const char *device = "/dev/ttyACM0";
+    //const char *device = "/dev/ttyUSB0";
+#else
+    const char *device = "/dev/tty.usbmodemfa131";
+#endif
+    urg_connection_type_t connection_type = URG_SERIAL;
+    long baudrate_or_port = 115200;
+    const char *ip_address = "192.168.0.10";
+    //const char *ip_address = "localhost";
+    
+    // \~japanese ê⁄ë±É^ÉCÉvÇÃêÿë÷Ç¶
+    connection_type = URG_ETHERNET;
+    baudrate_or_port = 10940;
+    device = ip_address;
+    
+    // \~japanese ê⁄ë±
+    if (urg_open(urg, connection_type, device, baudrate_or_port) < 0) {
+        printf("urg_open: %s, %ld: %s\n",
+               device, baudrate_or_port, urg_error(urg));
+        return -1;
+    }
+    return 0;
+}
+
+int scan_in_cycle(urg_t *urg, people2D_engine ppl2D) {
+    long *data;
+    long max_distance;
+    long min_distance;
+    long time_stamp;
+    int i;
+    int n;
+    
+    urg_start_measurement(urg, URG_DISTANCE, 1, 0);
+    data = (long *)malloc(urg_max_data_size(urg) * sizeof(data[0]));
+    if (!data) {
+        perror("urg_max_index()");
+        return 1;
+    }
+    
+    n = urg_get_distance(urg, data, &time_stamp);
+    if (n < 0) {
+        printf("urg_get_distance: %s\n", urg_error(urg));
+        urg_close(urg);
+        return 1;
+    }
+    
+    urg_distance_min_max(urg, &min_distance, &max_distance);
+    laserscan_data onescan(n);
+    onescan.timestamp = (double)time_stamp;
+    for (i = 0; i < n; ++i) {
+        double distance = data[i]/10.0;
+        double radian;
+        double x;
+        double y;
+        
+        if ((distance < min_distance/10.0) || (distance > max_distance/10.0)) {
+            continue;
+        }
+        
+        radian = urg_index2rad(urg, i);
+        x = (double)(distance * cos(radian));
+        y = (double)(distance * sin(radian));
+        
+        onescan.data.pts[i].x = x;
+        onescan.data.pts[i].y = y;
+        onescan.data.pts[i].label = 0;
+    }
+    urg_stop_measurement(urg);
+    order_bytheta_incart(onescan.data.pts);
+    ppl2D.add_onescan(onescan);
+    
+    const char * filename = "/Users/georgyguryev/Desktop/Skoltech/Robotics/skoltech-robotics-people-detection/LRF/netparams.txt";
+    neuralnet net(ppl2D.lfeatures, filename);
+    
+    std::vector<LSL_Point3D_container> clusters;
+    ppl2D.segment(clusters);
+    std::vector<LSL_Point3D_container> legs = net.classifyClusters(clusters);
+    // Let's assume that we have acquired legs here. Have to pass them to other C++ code now
+    
+    free(data);
+    #if defined(URG_MSC)
+    getchar();
+    #endif
+    return 0;
+}
+
+people2D_engine setup_people_engile()
+{
+    sw_param_str sw_param;
+    sw_param.sanity = 1;
+	sw_param.segonly = 0;
+	sw_param.verbosity = 0;
+	sw_param.precall = 0;
+	sw_param.benchmark = 0;
+    
+    sw_param.featuremix = 2;
+    sw_param.dseg = 0.2;
+    
+    people2D_engine ppl2D(sw_param);
+    ppl2D.set_featureset();
+    return ppl2D;
+}
 
 int main (int argc, char **argv)
 {
-  sw_param_str sw_param;
-  if(!parse_command_line(argc, argv, &sw_param))
-		exit(0);
-  printf("Attempting to load file: [%s]\n", sw_param.inputfile.c_str());
-  people2D_engine ppl2D(sw_param);
-  int ret = ppl2D.load_scandata(sw_param.inputfile);
-  if(!ret)
-  {
-    printf("No data or error in parsing\n");
-    exit(1);
-  }
-  printf("File contains %d laser scans\n", ret);
+    urg_t urg;
+    
+    if (open_urg_sensor_ethernet(&urg) < 0) {
+        printf("Couldn't establish connection to sensor");
+        return 1;
+    }
+    
+    people2D_engine ppl2D = setup_people_engile();
+    
+    while (true) {
+        if (scan_in_cycle(&urg, ppl2D)) {
+            break;
+        }
+        sleep(1.0f);
+    }
+    return 0;
+    
+    urg_close(&urg);
+    
+    /*int ret = ppl2D.load_scandata(sw_param.inputfile);
+    if(!ret)
+    {
+        printf("No data or error in parsing\n");
+        exit(1);
+    }
+    printf("File contains %d laser scans\n", ret);
   
-  ppl2D.set_featureset();
-  neuralnet net(ppl2D.lfeatures);
+    const char * filename = "/Users/georgyguryev/Desktop/Skoltech/Robotics/skoltech-robotics-people-detection/LRF/netparams.txt";
+    neuralnet net(ppl2D.lfeatures, filename);
   
-  std::vector<LSL_Point3D_container> clusters;
-  ppl2D.segment(clusters);
-  std::vector<LSL_Point3D_container> legs = net.classifyClusters(clusters);
-  // Let's assume that we have acquired legs here. Have to pass them to other C++ code now
+    std::vector<LSL_Point3D_container> clusters;
+    ppl2D.segment(clusters);
+    std::vector<LSL_Point3D_container> legs = net.classifyClusters(clusters);*/
+    
+    // Let's assume that we have acquired legs here. Have to pass them to other C++ code now
   
   return 0;
   
