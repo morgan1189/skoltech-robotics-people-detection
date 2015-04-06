@@ -1,3 +1,12 @@
+// The code does simple visual odometry. In current version it is not 
+// calculating correct position of the robot, since more information is
+// required for that (information from single camera is not enough).
+// For demonstration properties it shows the direction of optical flow,
+// which enables to track camera movements in relative values. 
+
+// Vahe Taamazyan, Skoltech, 2015
+// For Robotics class 
+
 #include <stdio.h>
 #include <stdlib.h> 
 #include <iostream>
@@ -44,6 +53,8 @@ int main( int argc, char** argv )
 
     const int MAX_COUNT = 500;
     bool needToInit = true;
+
+    // Sparse Optical Flow between two consequent images is calculated 
     for (;;)
     {
         kol++;
