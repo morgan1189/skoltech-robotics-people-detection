@@ -1,0 +1,45 @@
+//вырезки из кода под с++
+//остальное делалось в excel
+
+void VOdometer::poll(void)
+{
+m_angle=-1.0*(1.0*m_wheelRadius/m_distanceBetweenWheels)*(m_rightAngle+m_leftAngle);
+if (m_angle>((float)(maxAngle))) m_angle-=(float)maxAngle; else
+	if (m_angle<-((float)maxAngle)) m_angle+=float(maxAngle);
+m_omega=1.0*(1.0*m_wheelRadius/m_distanceBetweenWheels)*(m_rightOmega+m_leftOmega);
+uint32_t time=m_clock.getDeltaTime();
+m_X+=(0.5*m_wheelRadius*cos(m_angle)*(m_leftOmega-m_rightOmega)*time/m_clock.getTimeScale());
+if (m_X>((float)(maxX))) m_X-=(float)maxX; else
+	if (m_X<-((float)maxX)) m_X+=float(maxX);
+m_Y+=(0.5*m_wheelRadius*sin(m_angle)*(m_leftOmega-m_rightOmega)*time/m_clock.getTimeScale());
+if (m_Y>((float)(maxY))) m_Y-=(float)maxY; else
+	if (m_Y<-((float)maxY)) m_Y+=float(maxY);
+}
+
+float Wrap(float H)
+{
+  while (H > 2 * M_PI) H -= 2 * M_PI;
+  while (H < 0       ) H += 2 * M_PI;
+  return H;
+}
+//---------------------------------------------------------------------------
+float Atan2(float x,float y)
+{
+  int q;
+
+  if (x >= 0.0) {if (y >= 0.0) q = 1; else q = 4;}
+  else          {if (y >= 0.0) q = 2; else q = 3;}
+  
+  x = fabs(x);
+  y = fabs(y);
+  if (y < 1e-6) y = 1e-6;
+  
+  switch (q)
+  {
+    case 1:  return  atan(x / y);
+    case 2:  return -atan(x / y);
+    case 3:  return -M_PI + atan(x / y);
+    default: return  M_PI - atan(x / y);
+  }
+}
+
